@@ -6,14 +6,15 @@ import {
 } from "firebase/auth";
 import { doc, getFirestore, setDoc } from "firebase/firestore";
 import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
 import {
   Button,
-  StyleSheet,
+  HelperText,
+  Provider,
+  RadioButton,
   Text,
   TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+} from "react-native-paper";
 import app from "../firebase"; // Firebase config dosyasını import edin
 
 const Register = () => {
@@ -25,9 +26,20 @@ const Register = () => {
   const [gender, setGender] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [visible, setVisible] = useState(false);
 
   const auth = getAuth(app);
   const db = getFirestore(app); // Firestore bağlantısı
+
+  const showDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: birthDate,
+      onChange: (event, selectedDate) =>
+        setBirthDate(selectedDate || birthDate),
+      mode: "date",
+      is24Hour: true,
+    });
+  };
 
   const handleRegister = async () => {
     // Giriş doğrulama kontrolleri
@@ -104,93 +116,83 @@ const Register = () => {
     }
   };
 
-  const showDatePicker = () => {
-    DateTimePickerAndroid.open({
-      value: birthDate,
-      onChange: (event, selectedDate) =>
-        setBirthDate(selectedDate || birthDate),
-      mode: "date",
-      is24Hour: true,
-    });
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Kayıt Ol</Text>
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      {success && <Text style={styles.successText}>{success}</Text>}
-      <TextInput
-        style={styles.input}
-        placeholder="Ad Soyad"
-        value={fullName}
-        onChangeText={setFullName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="E-posta"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Şifre"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Telefon Numarası"
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={setPhone}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Doğum Tarihi (GG/AA/YYYY)"
-        value={birthDate.toLocaleDateString()}
-        onFocus={showDatePicker}
-        editable={false}
-      />
-      <Button title="Doğum Tarihi Seç" onPress={showDatePicker} />
-      <View style={styles.genderContainer}>
+    <Provider>
+      <View style={styles.container}>
+        <Text style={styles.title}>Kayıt Ol</Text>
+
+        {error && <HelperText type="error">{error}</HelperText>}
+        {success && <Text style={styles.successText}>{success}</Text>}
+
+        <TextInput
+          label="Ad Soyad"
+          value={fullName}
+          onChangeText={setFullName}
+          style={styles.input}
+          mode="outlined"
+        />
+        <TextInput
+          label="E-posta"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          style={styles.input}
+          mode="outlined"
+        />
+        <TextInput
+          label="Şifre"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          style={styles.input}
+          mode="outlined"
+        />
+        <TextInput
+          label="Telefon Numarası"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          style={styles.input}
+          mode="outlined"
+        />
+        <TextInput
+          label="Doğum Tarihi"
+          value={birthDate.toLocaleDateString()}
+          editable={false}
+          style={styles.input}
+          mode="outlined"
+        />
+        <Button
+          mode="contained"
+          onPress={showDatePicker}
+          style={styles.dateButton}
+        >
+          Doğum Tarihi Seç
+        </Button>
+
         <Text style={styles.genderTitle}>Cinsiyet</Text>
-        <TouchableOpacity
-          style={[
-            styles.genderButton,
-            gender === "Erkek" && styles.genderButtonSelected,
-          ]}
-          onPress={() => setGender("Erkek")}
+        <RadioButton.Group onValueChange={setGender} value={gender}>
+          <View style={styles.genderContainer}>
+            <View style={styles.genderOption}>
+              <RadioButton value="Erkek" />
+              <Text>Erkek</Text>
+            </View>
+            <View style={styles.genderOption}>
+              <RadioButton value="Kadın" />
+              <Text>Kadın</Text>
+            </View>
+          </View>
+        </RadioButton.Group>
+
+        <Button
+          mode="contained"
+          onPress={handleRegister}
+          style={styles.registerButton}
         >
-          <Text
-            style={[
-              styles.genderText,
-              gender === "Erkek" && styles.genderTextSelected,
-            ]}
-          >
-            Erkek
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.genderButton,
-            gender === "Kadın" && styles.genderButtonSelected,
-          ]}
-          onPress={() => setGender("Kadın")}
-        >
-          <Text
-            style={[
-              styles.genderText,
-              gender === "Kadın" && styles.genderTextSelected,
-            ]}
-          >
-            Kadın
-          </Text>
-        </TouchableOpacity>
+          Kayıt Ol
+        </Button>
       </View>
-      <Button title="Kayıt Ol" onPress={handleRegister} />
-    </View>
+    </Provider>
   );
 };
 
@@ -207,47 +209,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
-  },
-  errorText: {
-    color: "red",
-    marginBottom: 15,
-    textAlign: "center",
+    marginBottom: 10,
   },
   successText: {
     color: "green",
     marginBottom: 15,
     textAlign: "center",
   },
-  genderContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 15,
-  },
   genderTitle: {
     fontSize: 16,
     marginBottom: 10,
   },
-  genderButton: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+  genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 20,
+  },
+  genderOption: {
+    flexDirection: "row",
     alignItems: "center",
   },
-  genderButtonSelected: {
-    backgroundColor: "#0056b3",
-    borderColor: "#0056b3",
+  dateButton: {
+    marginBottom: 15,
   },
-  genderText: {
-    color: "black",
-  },
-  genderTextSelected: {
-    color: "white",
+  registerButton: {
+    marginTop: 20,
   },
 });
 

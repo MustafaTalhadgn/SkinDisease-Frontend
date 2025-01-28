@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { Image, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Button, Card, Text } from "react-native-paper";
 const PhotoUpload = ({ navigation }) => {
   const [image, setImage] = useState(null); // Seçilen fotoğraf
   const [uploading, setUploading] = useState(false); // Yükleme durumu
@@ -13,8 +13,8 @@ const PhotoUpload = ({ navigation }) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1], // Kare fotoğraf seçimi için
-      quality: 1, // En yüksek kalite
+      aspect: [1, 1],
+      quality: 1,
     });
 
     if (!result.canceled) {
@@ -26,8 +26,8 @@ const PhotoUpload = ({ navigation }) => {
   const takePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [1, 1], // Kare fotoğraf çekimi için
-      quality: 1, // En yüksek kalite
+      aspect: [1, 1],
+      quality: 1,
     });
 
     if (!result.canceled) {
@@ -48,12 +48,11 @@ const PhotoUpload = ({ navigation }) => {
       const formData = new FormData();
       formData.append("image", {
         uri: image,
-        name: "photo.jpg", // Fotoğrafın adı
-        type: "image/jpeg", // Fotoğrafın MIME tipi
+        name: "photo.jpg",
+        type: "image/jpeg",
       });
 
-      // Flask backend'e POST isteği gönderme
-      const res = await fetch("http://192.168.85.234:5000/process-image", {
+      const res = await fetch("http://192.168.1.39:5000/process-image", {
         method: "POST",
         headers: {
           "Content-Type": "multipart/form-data",
@@ -63,10 +62,9 @@ const PhotoUpload = ({ navigation }) => {
 
       if (res.ok) {
         const result = await res.json();
-        setPredictedClass(result.class); // Tahmin edilen sınıf
-        setConfidence(result.confidence); // Güven oranı
+        setPredictedClass(result.class);
+        setConfidence(result.confidence);
 
-        // Tahmin ekranına yönlendirme
         navigation.navigate("PredictionScreen", {
           predictedClass: result.class,
           confidence: result.confidence,
@@ -85,31 +83,62 @@ const PhotoUpload = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Fotoğraf Yükleme</Text>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text variant="headlineMedium" style={styles.title}>
+            Fotoğraf Yükleme
+          </Text>
 
-      {/* Seçilen fotoğrafı göster */}
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+          {/* Seçilen fotoğrafı göster */}
+          {image ? (
+            <Card>
+              <Image source={{ uri: image }} style={styles.image} />
+            </Card>
+          ) : (
+            <Text style={styles.placeholder}>
+              Henüz bir fotoğraf seçilmedi.
+            </Text>
+          )}
 
-      {/* Fotoğraf Seç Butonu */}
-      <TouchableOpacity style={styles.button} onPress={pickImage}>
-        <Text style={styles.buttonText}>Klasörden Fotoğraf Seç</Text>
-      </TouchableOpacity>
+          {/* Fotoğraf Seç Butonu */}
+          <Button
+            mode="outlined"
+            icon="image"
+            onPress={pickImage}
+            style={styles.button}
+          >
+            <Text> Klasörden Fotoğraf Seç</Text>
+          </Button>
 
-      {/* Fotoğraf Çek Butonu */}
-      <TouchableOpacity style={styles.button} onPress={takePhoto}>
-        <Text style={styles.buttonText}>Fotoğraf Çek</Text>
-      </TouchableOpacity>
+          {/* Fotoğraf Çek Butonu */}
+          <Button
+            mode="outlined"
+            icon="camera"
+            onPress={takePhoto}
+            style={styles.button}
+          >
+            <Text> Fotoğraf Çek</Text>
+          </Button>
 
-      {/* Fotoğraf Yükleme Butonu */}
-      <TouchableOpacity
-        style={[styles.button, uploading && styles.disabledButton]}
-        onPress={uploadImage}
-        disabled={uploading}
-      >
-        <Text style={styles.buttonText}>
-          {uploading ? "Yükleniyor..." : "Fotoğraf Gönder"}
-        </Text>
-      </TouchableOpacity>
+          {/* Fotoğraf Yükleme Butonu */}
+          <Button
+            mode="contained"
+            icon="upload"
+            onPress={uploadImage}
+            style={styles.button}
+            disabled={uploading}
+          >
+            {uploading ? (
+              <>
+                <ActivityIndicator animating={true} size="small" />
+                <Text style={styles.uploadingText}> Yükleniyor...</Text>
+              </>
+            ) : (
+              "Fotoğraf Gönder"
+            )}
+          </Button>
+        </Card.Content>
+      </Card>
     </View>
   );
 };
@@ -120,33 +149,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
+  card: {
+    width: "100%",
+    maxWidth: 400,
+    padding: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 20,
   },
   image: {
     width: 200,
     height: 200,
-    borderRadius: 10,
+    alignSelf: "center",
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderRadius: 10,
+  },
+  placeholder: {
+    textAlign: "center",
+    marginVertical: 20,
+    color: "#aaa",
   },
   button: {
-    backgroundColor: "#0056b3",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 10,
+    marginVertical: 10,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  disabledButton: {
-    backgroundColor: "#999",
+  uploadingText: {
+    marginLeft: 10,
   },
 });
 

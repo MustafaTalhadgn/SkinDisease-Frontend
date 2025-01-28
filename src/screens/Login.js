@@ -1,7 +1,8 @@
 import { useNavigation } from "@react-navigation/native"; // Sayfa yönlendirme için
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Button, Card, Text, TextInput } from "react-native-paper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -25,25 +26,43 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Giriş Yap</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="E-posta"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Şifre"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      {errorMessage ? (
-        <Text style={styles.error}>{errorMessage}</Text> // Hata mesajı
-      ) : null}
-      <Button title="Giriş Yap" onPress={handleLogin} />
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text variant="headlineMedium" style={styles.title}>
+            Giriş Yap
+          </Text>
+
+          {/* E-posta Girişi */}
+          <TextInput
+            mode="outlined"
+            label="E-posta"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+          />
+
+          {/* Şifre Girişi */}
+          <TextInput
+            mode="outlined"
+            label="Şifre"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+
+          {/* Hata Mesajı */}
+          {errorMessage ? (
+            <Text style={styles.error}>{errorMessage}</Text>
+          ) : null}
+
+          {/* Giriş Yap Butonu */}
+          <Button mode="contained" onPress={handleLogin} style={styles.button}>
+            <Text> Giriş Yap</Text>
+          </Button>
+        </Card.Content>
+      </Card>
     </View>
   );
 };
@@ -51,26 +70,30 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 400,
+    padding: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
     textAlign: "center",
+    marginBottom: 20,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
     marginBottom: 15,
+  },
+  button: {
+    marginTop: 10,
   },
   error: {
     color: "red",
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: 10,
   },
 });
 
