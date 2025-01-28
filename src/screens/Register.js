@@ -4,6 +4,7 @@ import {
   fetchSignInMethodsForEmail,
   getAuth,
 } from "firebase/auth";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
 import React, { useState } from "react";
 import {
   Button,
@@ -13,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import app from "../firebase";
+import app from "../firebase"; // Firebase config dosyasını import edin
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -26,8 +27,15 @@ const Register = () => {
   const [success, setSuccess] = useState("");
 
   const auth = getAuth(app);
+  const db = getFirestore(app); // Firestore bağlantısı
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
+    // Giriş doğrulama kontrolleri
+    if (!fullName || !email || !password || !phone || !gender) {
+      setError("Lütfen tüm alanları doldurun.");
+      setSuccess("");
+      return;
+    }
     if (!email.includes("@")) {
       setError("Geçersiz e-posta formatı");
       setSuccess("");
@@ -38,36 +46,62 @@ const Register = () => {
       setSuccess("");
       return;
     }
-    setError("");
-    setSuccess("");
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      setError("Telefon numarası 10 haneli olmalıdır.");
+      setSuccess("");
+      return;
+    }
 
-    // Kullanıcı varlığı kontrolü
-    fetchSignInMethodsForEmail(auth, email)
-      .then((methods) => {
-        if (methods.length > 0) {
-          setError("Bu e-posta zaten kullanımda");
-          return;
-        }
-        // Yeni kullanıcı oluşturma
-        createUserWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
-            setSuccess("Kullanıcı başarıyla oluşturuldu!");
-            setFullName("");
-            setEmail("");
-            setPassword("");
-            setPhone("");
-            setBirthDate(new Date());
-            setGender("");
-          })
-          .catch((error) => {
-            setError("Kayıt sırasında bir hata oluştu: " + error.message);
-          });
-      })
-      .catch((error) => {
-        setError(
-          "E-posta kontrolü sırasında bir hata oluştu: " + error.message
-        );
-      });
+    try {
+      // Kullanıcının mevcut olup olmadığını kontrol et
+      const methods = await fetchSignInMethodsForEmail(auth, email);
+      if (methods.length > 0) {
+        setError("Bu e-posta zaten kullanımda");
+        return;
+      }
+
+      // Firebase Authentication ile kullanıcı oluşturma
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const userId = userCredential.user.uid;
+      console.log("Firebase Authentication başarılı, UID:", userId);
+
+      // Kullanıcı verilerini Firestore'a kaydetme
+      const userData = {
+        fullName,
+        email,
+        phone,
+        birthDate: birthDate.toISOString(),
+        gender,
+        createdAt: new Date().toISOString(),
+      };
+      await setDoc(doc(db, "users", userId), userData);
+      console.log("Kullanıcı verileri Firestore'a kaydedildi:", userData);
+
+      // Başarı mesajını burada göster
+      setSuccess("Kullanıcı başarıyla oluşturuldu!");
+      setError("");
+
+      // Form alanlarını temizleme
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setPhone("");
+      setBirthDate(new Date());
+      setGender("");
+
+      // Başarı mesajını birkaç saniye sonra kaldır
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (error) {
+      console.error("Kayıt sırasında bir hata oluştu:", error.message);
+      setError("Kayıt sırasında bir hata oluştu: " + error.message);
+      setSuccess("");
+      setTimeout(() => setError(""), 3000); // Hata mesajını kaldır
+    }
   };
 
   const showDatePicker = () => {
@@ -107,7 +141,7 @@ const Register = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Telefon Numarası (Opsiyonel)"
+        placeholder="Telefon Numarası"
         keyboardType="phone-pad"
         value={phone}
         onChangeText={setPhone}
@@ -129,7 +163,14 @@ const Register = () => {
           ]}
           onPress={() => setGender("Erkek")}
         >
-          <Text style={styles.genderText}>Erkek</Text>
+          <Text
+            style={[
+              styles.genderText,
+              gender === "Erkek" && styles.genderTextSelected,
+            ]}
+          >
+            Erkek
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -138,7 +179,14 @@ const Register = () => {
           ]}
           onPress={() => setGender("Kadın")}
         >
-          <Text style={styles.genderText}>Kadın</Text>
+          <Text
+            style={[
+              styles.genderText,
+              gender === "Kadın" && styles.genderTextSelected,
+            ]}
+          >
+            Kadın
+          </Text>
         </TouchableOpacity>
       </View>
       <Button title="Kayıt Ol" onPress={handleRegister} />
@@ -192,11 +240,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   genderButtonSelected: {
-    backgroundColor: "black",
+    backgroundColor: "#0056b3",
     borderColor: "#0056b3",
   },
   genderText: {
     color: "black",
+  },
+  genderTextSelected: {
+    color: "white",
   },
 });
 

@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 256,
+    height: 256,
     marginBottom: 30,
   },
   button: {
