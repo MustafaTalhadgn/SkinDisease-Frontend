@@ -164,7 +164,7 @@ const userSettings = () => {
         </Button>
       </View>
 
-      <View style={styles.genderContainer}>
+      <View style={styles.inputContainer}>
         <Button
           mode="text"
           onPress={() => setGender("Erkek")}
@@ -201,6 +201,9 @@ const userSettings = () => {
 
       <Button mode="contained" onPress={handleSaveChanges}>
         Değişiklikleri Kaydet
+      </Button>
+      <Button mode="contained" onPress={profileImages}>
+        profil fotoğrafı değiştir
       </Button>
     </View>
   );
@@ -240,9 +243,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 15,
+    marginRight: 50,
   },
   selected: {
-    color: "blue",
+    backgroundColor: "grey",
     fontWeight: "bold",
   },
   notSelected: {

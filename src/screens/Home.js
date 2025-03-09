@@ -6,15 +6,15 @@ const Home = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Image source={require("../../assets/doktor.png")} style={styles.image} />
-      <TeheadlineMediumxt variant="" style={styles.title}>
+      <Text variant="headlineMedium" style={styles.title}>
         Hoş Geldiniz!
-      </TeheadlineMediumxt>
+      </Text>
       <Button
         mode="contained"
         onPress={() => navigation.navigate("Register")}
         style={styles.button}
       >
-        <Text> Kayıt Ol</Text>
+        <Text>Kaydı Ol</Text>
       </Button>
       <Button
         mode="outlined"

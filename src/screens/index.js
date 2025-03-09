@@ -60,9 +60,8 @@ const Index = ({ navigation }) => {
             style={styles.avatar}
           />
           <Text variant="headlineMedium" style={styles.title}>
-            Hoş Geldiniz, {userName}!
+            Hoş Geldiniz, {userName}
           </Text>
-          <Text style={styles.email}>E-posta: {userEmail}</Text>
         </Card.Content>
       </Card>
 

@@ -1,11 +1,12 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { Card, Paragraph, Text, Title } from "react-native-paper";
+import { Button, Card, Paragraph, Text, Title } from "react-native-paper";
 import treatments from "../treatments"; // Yol projenize göre değişebilir
 
 const PredictionScreen = ({ route }) => {
   const { predictedClass, confidence } = route.params;
-
+  const navigation = useNavigation(); // Bunu ekle
   const treatmentData = treatments[predictedClass] || {};
 
   return (
@@ -23,7 +24,6 @@ const PredictionScreen = ({ route }) => {
           </Paragraph>
         </Card.Content>
       </Card>
-
       <Card style={styles.card}>
         <Card.Content>
           <Title style={styles.treatmentTitle}>Tedavi Bilgileri</Title>
@@ -40,7 +40,14 @@ const PredictionScreen = ({ route }) => {
             {treatmentData.medical?.join(", ") || "Bilinmiyor"}
           </Paragraph>
         </Card.Content>
-      </Card>
+      </Card>{" "}
+      <Button
+        mode="outlined"
+        onPress={() => navigation.navigate("CitySelection")}
+        style={styles.button}
+      >
+        <Text>Randevu Al</Text>
+      </Button>
     </ScrollView>
   );
 };
