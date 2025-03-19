@@ -14,7 +14,7 @@ const Home = ({ navigation }) => {
         onPress={() => navigation.navigate("Register")}
         style={styles.button}
       >
-        <Text>Kaydı Ol</Text>
+        <Text>Kayıt Ol</Text>
       </Button>
       <Button
         mode="outlined"

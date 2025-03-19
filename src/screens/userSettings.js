@@ -57,16 +57,11 @@ const userSettings = () => {
     }
 
     try {
-      // Kullanıcıyı güncellemek için yalnızca geçerli (boş olmayan) alanları kontrol et
       const updates = {};
-
       if (fullName) updates.displayName = fullName;
       if (email) updates.email = email;
-      if (password) {
-        if (newPassword) updates.password = newPassword;
-      }
+      if (password && newPassword) updates.password = newPassword;
 
-      // Firebase Authentication güncellemelerini yap
       if (Object.keys(updates).length > 0) {
         await updateProfile(user, {
           displayName: updates.displayName || user.displayName,
@@ -75,7 +70,6 @@ const userSettings = () => {
         if (updates.password) await updatePassword(user, updates.password);
       }
 
-      // Firestore güncellemeleri
       const userRef = doc(db, "users", user.uid);
       const userUpdates = {};
       if (fullName) userUpdates.fullName = fullName;
@@ -201,9 +195,6 @@ const userSettings = () => {
 
       <Button mode="contained" onPress={handleSaveChanges}>
         Değişiklikleri Kaydet
-      </Button>
-      <Button mode="contained" onPress={profileImages}>
-        profil fotoğrafı değiştir
       </Button>
     </View>
   );

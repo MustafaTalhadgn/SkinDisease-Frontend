@@ -52,7 +52,7 @@ const PhotoUpload = ({ navigation }) => {
         type: "image/jpeg",
       });
 
-      const res = await fetch("http://192.168.1.33:5000/process-image", {
+      const res = await fetch("http://172.31.13.126:5000/process-image", {
         method: "POST",
         headers: {
           "Content-Type": "multipart/form-data",

@@ -2,14 +2,12 @@ import { getAuth } from "firebase/auth";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { Avatar, Button, Card, Text } from "react-native-paper";
-import app from "../firebase"; // Firebase yapılandırmasını import et
+import { Button, Card, Text } from "react-native-paper";
+import app from "../firebase";
 
 const Index = ({ navigation }) => {
-  const [userName, setUserName] = useState(""); // Kullanıcı adını saklamak için state
-  const [userEmail, setUserEmail] = useState(""); // Kullanıcı e-posta bilgisi
-  const [profilePic, setProfilePic] = useState(""); // Profil fotoğrafı için state
-  const [loading, setLoading] = useState(true); // Yükleniyor durumunu takip etmek için state
+  const [userName, setUserName] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -17,35 +15,29 @@ const Index = ({ navigation }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const currentUser = auth.currentUser; // Şu an giriş yapan kullanıcı
+        const currentUser = auth.currentUser;
         if (currentUser) {
-          const userId = currentUser.uid; // Kullanıcının UID'sini al
-          const userDoc = await getDoc(doc(db, "users", userId)); // Firestore'dan kullanıcı verisini al
+          const userId = currentUser.uid;
+          const userDoc = await getDoc(doc(db, "users", userId));
 
           if (userDoc.exists()) {
-            const userData = userDoc.data(); // Veriyi al
-            setUserName(userData.fullName); // Ad soyad bilgisini state'e ata
-            setUserEmail(userData.email); // E-posta bilgisini state'e ata
-            setProfilePic(userData.profilePic || "default-profile-pic-url"); // Profil fotoğrafı
-          } else {
-            console.log("Kullanıcı verisi bulunamadı.");
+            setUserName(userDoc.data().fullName);
           }
         }
       } catch (error) {
         console.error("Kullanıcı verisi alınırken hata:", error);
       } finally {
-        setLoading(false); // Veriler alındıktan sonra loading durumunu false yap
+        setLoading(false);
       }
     };
 
-    fetchUserData(); // Bileşen yüklendiğinde kullanıcı verisini getir
+    fetchUserData();
   }, []);
 
   if (loading) {
-    // Eğer veriler hala yükleniyorsa, yüklenme göstergesi göster
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#6a1b9a" />
       </View>
     );
   }
@@ -54,45 +46,35 @@ const Index = ({ navigation }) => {
     <View style={styles.container}>
       <Card style={styles.card}>
         <Card.Content>
-          <Avatar.Image
-            size={100}
-            source={{ uri: profilePic }}
-            style={styles.avatar}
-          />
-          <Text variant="headlineMedium" style={styles.title}>
-            Hoş Geldiniz, {userName}
-          </Text>
+          <Text style={styles.welcomeText}>Merhaba,</Text>
+          <Text style={styles.userName}>{userName}</Text>
         </Card.Content>
       </Card>
 
-      {/* Fotoğraf Yükle Butonu */}
       <Button
         mode="contained"
         onPress={() => navigation.navigate("PhotoUpload")}
-        style={styles.button}
+        style={[styles.button, styles.uploadButton]}
       >
-        <Text>Fotoğraf Yükle</Text>
+        Fotoğraf Yükle
       </Button>
 
-      {/* Ayarlar Butonu */}
       <Button
         mode="outlined"
         onPress={() => navigation.navigate("Settings")}
         style={styles.button}
       >
-        <Text>Ayarlar</Text>
+        Ayarlar
       </Button>
 
-      {/* Kayıtlı Veriler Butonu */}
       <Button
         mode="outlined"
         onPress={() => navigation.navigate("Records")}
         style={styles.button}
       >
-        <Text>Kayıtlı Veriler</Text>
+        Kayıtlı Veriler
       </Button>
 
-      {/* Çıkış Yap Butonu */}
       <Button
         mode="text"
         onPress={() => {
@@ -102,7 +84,7 @@ const Index = ({ navigation }) => {
         }}
         style={styles.logoutButton}
       >
-        <Text>Çıkış Yap</Text>
+        Çıkış Yap
       </Button>
     </View>
   );
@@ -114,39 +96,46 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f3e5f5",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f3e5f5",
   },
   card: {
     width: "90%",
+    padding: 20,
+    maxWidth: 400,
     marginBottom: 20,
     alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    elevation: 5,
   },
-  avatar: {
-    alignSelf: "center",
-    marginBottom: 15,
+  welcomeText: {
+    fontSize: 18,
+    fontWeight: "300",
+    color: "#7b1fa2",
   },
-  title: {
-    textAlign: "center",
-    marginBottom: 5,
-  },
-  email: {
-    textAlign: "center",
-    color: "#555",
-    marginBottom: 10,
+  userName: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#4a148c",
+    marginTop: 5,
   },
   button: {
     marginVertical: 10,
     width: "90%",
+    borderRadius: 10,
+  },
+  uploadButton: {
+    backgroundColor: "#7b1fa2",
   },
   logoutButton: {
     marginTop: 20,
-    width: "90%",
+    color: "#d32f2f",
   },
 });
 

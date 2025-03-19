@@ -51,16 +51,31 @@ const DoctorListScreen = ({ route }) => {
     }
 
     const autoFillForm = `
-    document.getElementById("dpcmp-302").value = "${user?.fullName.split(" ")[0] || ""}";
-    document.getElementById("dpcmp-303").value = "${user?.fullName.split(" ")[1] || ""}";
-    document.getElementById("birthDate").value = "${user?.birthDate}";
-    document.getElementById("dpcmp-323").value = "${user?.phone}";
-    document.getElementById("dpcmp-324").value = "${user?.email}";
-    document.getElementById("dpcmp-325").value = "${user?.email}";
+        setTimeout(() => {
+            function fillInput(id, value) {
+                let input = document.getElementById(id);
+                if (input) {
+                    input.value = value;
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                    input.dispatchEvent(new Event("change", { bubbles: true }));
+                }
+            }
 
-    // Sağlık verileri onay kutusunu işaretle
-    document.querySelector(".custom-control-input").checked = true;
-  `;
+            fillInput("dpcmp-302", "${user?.fullName.split(" ")[0] || ""}");
+            fillInput("dpcmp-303", "${user?.fullName.split(" ")[1] || ""}");
+            fillInput("birthDate", "${user?.birthDate}");
+            fillInput("dpcmp-323", "${user?.phone}");
+            fillInput("dpcmp-324", "${user?.email}");
+            fillInput("dpcmp-325", "${user?.email}");
+
+            // Sağlık verileri onay kutusunu işaretle
+            let checkbox = document.querySelector(".custom-control-input");
+            if (checkbox) {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+        }, 3000); // Sayfanın tamamen yüklenmesini beklemek için 3 saniye gecikme ekledik.
+    `;
 
     return (
         <View style={{ flex: 1 }}>
@@ -73,7 +88,13 @@ const DoctorListScreen = ({ route }) => {
                 onNavigationStateChange={(navState) => {
                     setCurrentUrl(navState.url);
                 }}
-                injectedJavaScript={currentUrl.includes("booking/randevu-al") ? autoFillForm : ""}
+                onLoadEnd={() => {
+                    if (currentUrl.includes("booking/randevu-al")) {
+                        console.log("Form sayfası açıldı, form dolduruluyor...");
+                        this.webref.injectJavaScript(autoFillForm);
+                    }
+                }}
+                ref={(ref) => (this.webref = ref)}
             />
         </View>
     );
